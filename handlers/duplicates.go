@@ -13,7 +13,7 @@ type duplicates struct {
 	finder accesslog.DupesFinder
 }
 
-func NewDublicatesHandler(finder accesslog.DupesFinder) http.Handler {
+func NewDuplicatesHandler(finder accesslog.DupesFinder) http.Handler {
 	return &duplicates{finder: finder}
 }
 
@@ -31,7 +31,7 @@ func (h *duplicates) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		notFound(w)
 		return
 	}
-	result, err := json.Marshal(h.finder.CheckDublicates(fUserId, sUserId))
+	result, err := json.Marshal(h.finder.CheckDuplicates(fUserId, sUserId))
 	if err != nil {
 		internalServerError(w, err)
 		return

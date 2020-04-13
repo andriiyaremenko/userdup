@@ -15,7 +15,7 @@ func main() {
 	repo := accesslog.NewCsvRepo(*filePath)
 	finder := accesslog.NewDupesFinder(repo)
 	mux := http.NewServeMux()
-	mux.Handle("/", handlers.NewDublicatesHandler(finder))
+	mux.Handle("/", handlers.NewDuplicatesHandler(finder))
 	log.Printf("serving on %s", *address)
 	log.Fatal(http.ListenAndServe(*address, mux))
 }

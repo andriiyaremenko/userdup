@@ -5,7 +5,7 @@ type Duplicates struct {
 }
 
 type DupesFinder interface {
-	CheckDublicates(fUId, sUId int64) Duplicates
+	CheckDuplicates(fUId, sUId int64) Duplicates
 }
 
 type dupesFinder struct {
@@ -16,7 +16,7 @@ func NewDupesFinder(repo AccessLogRepo) DupesFinder {
 	return &dupesFinder{repo: repo}
 }
 
-func (df *dupesFinder) CheckDublicates(fUId, sUId int64) (result Duplicates) {
+func (df *dupesFinder) CheckDuplicates(fUId, sUId int64) (result Duplicates) {
 	result = Duplicates{Dupes: false}
 	if fUId == sUId {
 		return
