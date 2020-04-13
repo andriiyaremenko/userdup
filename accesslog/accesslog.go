@@ -1,5 +1,9 @@
 package accesslog
 
-func CheckDublicates(fUId, sUId int64) bool {
-	return false
+import "time"
+
+type AccessLog struct {
+	UserId int64
+	IPAddr string
+	TS     time.Time
 }
