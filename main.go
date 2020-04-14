@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	address := flag.String("address", "localhost:8080", "host (and port) to serve app")
+	address := flag.String("addr", "localhost:8080", "host (and port) to serve app")
 	filePath := flag.String("f", "./access_log.csv", "file storing access log")
 	flag.Parse()
 	repo := accesslog.NewCsvRepo(*filePath)

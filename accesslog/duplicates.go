@@ -1,5 +1,9 @@
 package accesslog
 
+import (
+	"log"
+)
+
 type Duplicates struct {
 	Dupes bool `json:"dupes"`
 }
@@ -19,46 +23,34 @@ func NewDupesFinder(repo AccessLogRepo) DupesFinder {
 func (df *dupesFinder) CheckDuplicates(fUId, sUId int64) (result Duplicates) {
 	result = Duplicates{Dupes: false}
 	if fUId == sUId {
+		result = Duplicates{Dupes: true}
 		return
 	}
 	mCount := 2
-	fIPs := make(map[string]struct{})
-	sIPs := make(map[string]struct{})
-	done := make(chan interface{})
-	defer close(done)
-	fAL := make(chan AccessLog)
-	sAL := make(chan AccessLog)
-	go df.repo.AllById(fUId, fAL, done)
-	go df.repo.AllById(sUId, sAL, done)
-loop:
-	for {
-		select {
-		case f, ok := <-fAL:
-			if ok {
-				fIPs[f.IPAddr] = struct{}{}
-			} else {
-				fAL = nil
-			}
-		case s, ok := <-sAL:
-			if ok {
-				sIPs[s.IPAddr] = struct{}{}
-			} else {
-				sAL = nil
-			}
-		}
-		found := 0
-		for k, _ := range fIPs {
-			if _, ok := sIPs[k]; ok {
-				found++
-			}
-			if found >= mCount {
-				result = Duplicates{Dupes: true}
-				break loop
-			}
-		}
-		if sAL == nil && fAL == nil {
-			break loop
+	fAL := make(chan []string)
+	sAL := make(chan []string)
+	go df.repo.AllIps(fUId, fAL)
+	go df.repo.AllIps(sUId, sAL)
+	fIPs := <-fAL
+	sIPs := <-sAL
+	var r []string
+	for _, v := range fIPs {
+		if contains(sIPs, v) {
+			r = append(r, v)
 		}
 	}
+	if len(r) >= mCount {
+		result = Duplicates{Dupes: true}
+		log.Printf("%v", r)
+	}
 	return
+}
+
+func contains(sl []string, s string) bool {
+	for _, v := range sl {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
