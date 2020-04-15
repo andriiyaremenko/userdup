@@ -3,17 +3,17 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/andriiyaremenko/userdup/accesslog"
+	d "github.com/andriiyaremenko/userdup/duplicates"
 	"net/http"
 	"path"
 	"strconv"
 )
 
 type duplicates struct {
-	finder accesslog.DupesFinder
+	finder d.DupesFinder
 }
 
-func NewDuplicatesHandler(finder accesslog.DupesFinder) http.Handler {
+func NewDuplicatesHandler(finder d.DupesFinder) http.Handler {
 	return &duplicates{finder: finder}
 }
 
