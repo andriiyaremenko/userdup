@@ -30,14 +30,10 @@ func (df *dupesFinder) CheckDuplicates(fUId, sUId int64) (result Duplicates) {
 		return
 	}
 	mCount := 2
-	f, fChan := df.getIps(fUId)
-	s, sChan := df.getIps(sUId)
-	if f == nil {
-		f = <-fChan
-	}
-	if s == nil {
-		s = <-sChan
-	}
+	fChan := df.getIps(fUId)
+	sChan := df.getIps(sUId)
+	f := <-fChan
+	s := <-sChan
 	var r []string
 	for _, v := range f {
 		if contains(s, v) {
@@ -51,13 +47,17 @@ func (df *dupesFinder) CheckDuplicates(fUId, sUId int64) (result Duplicates) {
 	return
 }
 
-func (df *dupesFinder) getIps(id int64) ([]string, chan []string) {
-	if ips, ok := df.cache.Get(id); ok {
-		return ips, nil
-	}
-	al := make(chan []string)
-	go df.repo.AllIps(id, al)
-	return nil, al
+func (df *dupesFinder) getIps(id int64) <-chan []string {
+	ipsChan := make(chan []string)
+	go func() {
+		defer close(ipsChan)
+		if ips, ok := df.cache.Get(id); ok {
+			ipsChan <- ips
+			return
+		}
+		ipsChan <- df.repo.AllIps(id)
+	}()
+	return ipsChan
 }
 
 func contains(sl []string, s string) bool {
