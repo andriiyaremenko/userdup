@@ -45,9 +45,12 @@ func (repo *csvRepo) AllUsers() map[int64][]string {
 	defer file.Close()
 	ips := newSyncIPs()
 	s := bufio.NewScanner(file)
+	var wg sync.WaitGroup
 	for s.Scan() {
 		line := s.Text()
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			record := strings.Split(string(line), ",")
 			id, err := strconv.ParseInt(record[0], 10, 64)
 			if err != nil {
@@ -57,6 +60,7 @@ func (repo *csvRepo) AllUsers() map[int64][]string {
 			ips.addIp(id, record[1])
 		}()
 	}
+	wg.Wait()
 	return ips.all()
 }
 
@@ -73,9 +77,12 @@ func (repo *csvRepo) AllIps(id int64) []string {
 	log.Printf("processing %d started", id)
 	ips := newSyncIPs()
 	sId := strconv.FormatInt(id, 10)
+	var wg sync.WaitGroup
 	for s.Scan() {
 		line := s.Text()
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			record := strings.Split(string(line), ",")
 			if record[0] != sId {
 				return
@@ -84,5 +91,6 @@ func (repo *csvRepo) AllIps(id int64) []string {
 		}()
 	}
 	log.Printf("processing %d finished", id)
+	wg.Wait()
 	return ips.allById(id)
 }
